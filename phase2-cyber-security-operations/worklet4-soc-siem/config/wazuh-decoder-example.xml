@@ -1,0 +1,7 @@
+<!-- Place in /var/ossec/etc/decoders/local_decoder.xml on the Wazuh manager -->
+<decoder name="custom-ssh-fail">
+  <parent>sshd</parent>
+  <prematch>Failed password</prematch>
+  <regex offset="after_prematch">for (\S+) from (\S+) port</regex>
+  <order>user, srcip</order>
+</decoder>
