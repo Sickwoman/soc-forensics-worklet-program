@@ -1,0 +1,9 @@
+[Interface]
+Address = 10.20.0.2/24
+PrivateKey = CLIENT_PRIVATE_KEY_HERE
+
+[Peer]
+PublicKey = SERVER_PUBLIC_KEY_HERE
+Endpoint = SERVER_PUBLIC_IP_HERE:51820
+AllowedIPs = 10.10.10.0/24, 10.20.0.0/24
+PersistentKeepalive = 25

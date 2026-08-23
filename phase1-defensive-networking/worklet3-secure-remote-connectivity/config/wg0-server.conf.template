@@ -1,0 +1,8 @@
+[Interface]
+Address = 10.20.0.1/24
+ListenPort = 51820
+PrivateKey = SERVER_PRIVATE_KEY_HERE
+
+[Peer]
+PublicKey = CLIENT_PUBLIC_KEY_HERE
+AllowedIPs = 10.20.0.2/32
