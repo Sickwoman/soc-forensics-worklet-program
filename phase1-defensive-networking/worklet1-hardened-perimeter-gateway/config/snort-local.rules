@@ -1,0 +1,6 @@
+# Custom Snort local rules
+# Place in /usr/local/etc/snort/rules/local.rules on pfSense
+# Note: pfSense requires the dollar sign in front of HOME_NET when you load this
+alert tcp any any -> HOME_NET any (msg:"Custom Nmap SYN scan detected"; flags:S; threshold: type threshold, track by_src, count 20, seconds 5; sid:1000001; rev:1;)
+alert tcp any any -> HOME_NET 22 (msg:"Custom SSH brute force attempt"; flags:S; threshold: type threshold, track by_src, count 5, seconds 60; sid:1000002; rev:1;)
+alert icmp any any -> HOME_NET any (msg:"Custom ICMP flood"; itype:8; threshold: type threshold, track by_src, count 10, seconds 5; sid:1000003; rev:1;)
