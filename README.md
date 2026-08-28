@@ -28,7 +28,7 @@ Engineering and Computer Science students, faculty mentor required for supervisi
 - Kali Linux as the primary attacker and analysis workstation
 - VirtualBox or VMware for virtualization
 - Host-only and internal networks configured for isolated lab traffic
-- Planned VMs: pfSense, VyOS, Ubuntu Server x2, Metasploitable2 or 3, Windows 10 client
+- Planned VMs: pfSense, VyOS, Ubuntu Server x2, Metasploitable2 or 3, Windows 10 client.
 
 ## Evaluation
 Each worklet is graded by the faculty mentor on three criteria, Documentation,
