@@ -2,6 +2,13 @@
 
 Objective: Defend against OWASP Top 10 threats using Nginx and ModSecurity.
 
+## Lab Topology
+
+  Kali attacker, HTTP on TCP 80
+    connects to nginx with ModSecurity and the OWASP Core Rule Set, on the target web server VM
+      passes clean requests to the web application behind it, which listens on 127.0.0.1 only
+      returns 403 for blocked requests and writes them to the ModSecurity audit log, forwarded to Wazuh, see Worklet 4
+
 ## Build Steps
 
 1. On the target web server VM, install nginx and the ModSecurity connector for nginx.

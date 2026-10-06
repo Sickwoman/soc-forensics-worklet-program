@@ -2,6 +2,13 @@
 
 Objective: Analyze live memory artifacts to find hidden processes and command history.
 
+## Evidence Flow
+
+  Target VM, Windows or Linux, running the simulated hidden process
+    memory captured with DumpIt or LiME to external, shared, or network storage, not the target's own disk, then hashed
+      copied to the Kali analysis workstation, hash re-checked, transfer logged in the chain of custody
+        analyzed with Volatility 3 via scripts/volatility-analysis.sh, working on a copy, never the original
+
 ## Build Steps
 
 1. On the target VM, Windows or Linux, simulate compromise by running a hidden or renamed process.

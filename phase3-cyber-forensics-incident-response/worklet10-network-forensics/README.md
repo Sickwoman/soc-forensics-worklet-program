@@ -2,6 +2,12 @@
 
 Objective: Reconstruct an attack from captured network traffic.
 
+## Lab Topology
+
+  Kali attacker VM, also capturing with tcpdump on its Host-only interface
+    attack traffic to and from the Metasploitable target on 10.10.10.0/24
+      capture.pcap hashed with sha256sum, then analyzed with scripts/pcap-analysis.py and Wireshark
+
 ## Build Steps
 
 1. On Kali, start a capture during a simulated attack using tcpdump, writing to capture.pcap.
