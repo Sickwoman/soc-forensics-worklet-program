@@ -15,3 +15,9 @@ privatekey
 *.key
 wg0.conf
 .google_authenticator
+
+# Python and local state
+__pycache__/
+*.pyc
+.wg-monitor-state.json
+.lab-keys/

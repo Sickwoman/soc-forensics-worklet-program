@@ -4,7 +4,26 @@ Each peer generates its own keypair locally, private keys never leave the host.
 Public keys are exchanged out of band, not over the tunnel being established.
 Private key files are set to permission 600, owned by root, stored under /etc/wireguard.
 Key rotation: regenerate and redistribute public keys every 90 days or on suspected compromise.
-Revocation: remove the peer block from the server config and run wg syncconf to revoke immediately.
+Revocation: run scripts/revoke-peer.sh <user>, which flips the peer to revoked in
+config/peers.yaml, re-renders the active set, and applies it with wg syncconf, so
+access is withdrawn live without a manual config edit or an interface restart.
+
+## Automation and the identity registry
+
+Keys and entitlements are driven from config/peers.yaml, the single source of
+truth, so onboarding, rotation, and revocation are repeatable instead of hand-done.
+
+- Onboard: add the peer to peers.yaml, then scripts/provision-peer.sh <user>,
+  which runs a device posture check and applies the new entitlement live.
+- Rotate: generate a fresh keypair for the peer, update its public key in
+  peers.yaml, and re-run provision-peer.sh. Because the apply is declarative, the
+  old key stops working the moment the new set is pushed. Rotate every 90 days or
+  on suspected compromise.
+- Revoke: scripts/revoke-peer.sh <user>, as above.
+
+scripts/render-config.py turns the registry into the server config and the
+firewall, so a peer's access always matches the registry and cannot drift apart
+by hand-editing one file and forgetting another.
 
 ## Threat Model, STRIDE-lite
 

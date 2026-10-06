@@ -3,6 +3,24 @@ Address = 10.20.0.1/24
 ListenPort = 51820
 PrivateKey = SERVER_PRIVATE_KEY_HERE
 
-[Peer]
-PublicKey = CLIENT_PUBLIC_KEY_HERE
-AllowedIPs = 10.20.0.2/32
+# Forwarding and the per-peer firewall come up with the tunnel.
+# The original template had neither, so the tunnel established but forwarded
+# nothing, and once it did forward, any peer could reach the whole internal
+# subnet. Both are fixed here: ip_forward is enabled, and the least-privilege
+# ruleset is loaded. nftables-zerotrust.nft is generated from config/peers.yaml
+# by scripts/render-config.py, so the firewall always matches the registry.
+PostUp = sysctl -w net.ipv4.ip_forward=1
+PostUp = nft -f /etc/wireguard/nftables-zerotrust.nft
+PostDown = nft delete table inet zerotrust || true
+
+# [Peer] blocks below this line are generated from config/peers.yaml, do not edit
+# them by hand. Each peer's AllowedIPs is only its own tunnel address, which is
+# cryptographic routing, deciding which key owns which tunnel IP. Which internal
+# services that peer may actually reach is enforced separately in nftables, so
+# routing and authorization are two independent layers.
+#
+# Example of one generated block:
+# [Peer]
+# # user=alice role=developer device=laptop-alice-01 allow=web
+# PublicKey = ALICE_PUBLIC_KEY_HERE
+# AllowedIPs = 10.20.0.2/32

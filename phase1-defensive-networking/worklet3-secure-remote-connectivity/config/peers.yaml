@@ -1,0 +1,60 @@
+# Identity registry for Zero Trust remote access, the single source of truth.
+# scripts/render-config.py turns this into the server wg0.conf and the nftables
+# firewall, so a peer's network reach is defined here by identity, not by hand.
+#
+# To add a user: add a block under peers with their public key and the services
+# they may reach, then run scripts/provision-peer.sh <user>.
+# To revoke a user: run scripts/revoke-peer.sh <user>, which flips status to
+# revoked here and re-applies, no manual config editing.
+
+server:
+  # The server's public endpoint, what clients put in their Endpoint line.
+  # In the container lab this is the wg-server address on the edge network.
+  endpoint: 172.28.0.10:51820
+  interface: wg0
+  address: 10.20.0.1/24
+  tunnel_subnet: 10.20.0.0/24
+  # Filled in by provision-peer.sh from the server's generated key, clients need it.
+  public_key: SERVER_PUBLIC_KEY_HERE
+
+# Internal services a peer can be entitled to. Entitlements below reference these
+# names, so a service only has to be described once.
+internal_services:
+  web:
+    host: 10.10.10.20
+    port: 80
+    proto: tcp
+  db:
+    host: 10.10.10.30
+    port: 5432
+    proto: tcp
+
+peers:
+  - user: alice
+    role: developer
+    device_id: laptop-alice-01
+    tunnel_ip: 10.20.0.2
+    public_key: ALICE_PUBLIC_KEY_HERE
+    allow: [web]          # developer reaches the web app only, never the database
+    expiry: 2026-12-31
+    status: active
+
+  - user: bob
+    role: dba
+    device_id: laptop-bob-01
+    tunnel_ip: 10.20.0.3
+    public_key: BOB_PUBLIC_KEY_HERE
+    allow: [db]           # database admin reaches the database only, never the web app
+    expiry: 2026-12-31
+    status: active
+
+  # Mallory is a stand-in for a compromised or rogue laptop, used in the demo.
+  # She is provisioned active so the demo can show detection and live revocation.
+  - user: mallory
+    role: contractor
+    device_id: laptop-mallory-01
+    tunnel_ip: 10.20.0.4
+    public_key: MALLORY_PUBLIC_KEY_HERE
+    allow: [web]
+    expiry: 2026-12-31
+    status: active

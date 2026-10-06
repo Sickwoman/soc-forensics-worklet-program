@@ -1,0 +1,115 @@
+# Zero Trust remote-access lab, six containers on two networks, runnable on 8 GB.
+#   edge     172.28.0.0/24  the untrusted side, where clients reach the server
+#   internal 10.10.10.0/24  the protected services, only the gateway touches this
+# Clients reach internal services only through the tunnel, the server's forwarding,
+# and the nftables entitlements, so least privilege is enforced, not assumed.
+#
+# Up:   bash lab-up.sh up
+# Down: bash lab-up.sh down
+
+networks:
+  edge:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+  internal:
+    ipam:
+      config:
+        - subnet: 10.10.10.0/24
+
+volumes:
+  lab-keys:
+
+services:
+  wg-server:
+    build: .
+    image: zt-lab
+    container_name: zt-wg-server
+    hostname: wg-server
+    environment:
+      ROLE: server
+    cap_add: [NET_ADMIN, NET_RAW]
+    devices: ["/dev/net/tun"]
+    sysctls:
+      net.ipv4.ip_forward: "1"
+    volumes:
+      - lab-keys:/lab-keys
+      - ../config/peers.yaml:/etc/zerotrust/peers.yaml:ro
+    networks:
+      edge:
+        ipv4_address: 172.28.0.10
+      internal:
+        ipv4_address: 10.10.10.1
+
+  svc-web:
+    image: nginx:alpine
+    container_name: zt-svc-web
+    hostname: svc-web
+    networks:
+      internal:
+        ipv4_address: 10.10.10.20
+
+  svc-db:
+    build: .
+    image: zt-lab
+    container_name: zt-svc-db
+    hostname: svc-db
+    environment:
+      ROLE: db
+    networks:
+      internal:
+        ipv4_address: 10.10.10.30
+
+  client-alice:
+    build: .
+    image: zt-lab
+    container_name: zt-client-alice
+    hostname: client-alice
+    environment:
+      ROLE: client
+      PEER_USER: alice
+    cap_add: [NET_ADMIN, NET_RAW]
+    devices: ["/dev/net/tun"]
+    volumes:
+      - lab-keys:/lab-keys
+      - ../config/peers.yaml:/etc/zerotrust/peers.yaml:ro
+    depends_on: [wg-server]
+    networks:
+      edge:
+        ipv4_address: 172.28.0.21
+
+  client-bob:
+    build: .
+    image: zt-lab
+    container_name: zt-client-bob
+    hostname: client-bob
+    environment:
+      ROLE: client
+      PEER_USER: bob
+    cap_add: [NET_ADMIN, NET_RAW]
+    devices: ["/dev/net/tun"]
+    volumes:
+      - lab-keys:/lab-keys
+      - ../config/peers.yaml:/etc/zerotrust/peers.yaml:ro
+    depends_on: [wg-server]
+    networks:
+      edge:
+        ipv4_address: 172.28.0.22
+
+  client-mallory:
+    build: .
+    image: zt-lab
+    container_name: zt-client-mallory
+    hostname: client-mallory
+    environment:
+      ROLE: client
+      PEER_USER: mallory
+    cap_add: [NET_ADMIN, NET_RAW]
+    devices: ["/dev/net/tun"]
+    volumes:
+      - lab-keys:/lab-keys
+      - ../config/peers.yaml:/etc/zerotrust/peers.yaml:ro
+    depends_on: [wg-server]
+    networks:
+      edge:
+        ipv4_address: 172.28.0.23
