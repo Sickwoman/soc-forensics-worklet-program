@@ -1,0 +1,17 @@
+# Forensic evidence files, commit hashes and excerpts instead, see docs/evidence-guide.md
+*.pcap
+*.pcapng
+*.dd
+*.raw
+*.img
+*.E01
+*.lime
+*.mem
+*.vmem
+*.dmp
+
+# Secrets
+privatekey
+*.key
+wg0.conf
+.google_authenticator

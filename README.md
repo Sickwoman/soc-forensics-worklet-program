@@ -38,4 +38,5 @@ or Advanced. See docs/rubric.md for details.
 ## Repo Layout
 Each worklet folder contains a README with objective and build steps, a docs
 folder with required documentation deliverables, and a config or scripts folder
-with working configs or helper scripts.
+with working configs or helper scripts. Evidence from the lab run goes in an
+evidence folder in each worklet, see docs/evidence-guide.md.
