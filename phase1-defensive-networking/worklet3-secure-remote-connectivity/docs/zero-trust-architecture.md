@@ -55,7 +55,20 @@ them is what makes this Zero Trust rather than a VPN with a firewall bolted on.
 Because the two layers are independent, a tampered or over-broad client config
 cannot widen access: even if a client sets AllowedIPs to the whole subnet, the
 gateway still only forwards it to its one permitted service. Defense does not
-depend on the client behaving.
+depend on the client behaving. This was verified in the lab: a client whose
+AllowedIPs was widened to the whole internal subnet was still dropped at the
+gateway when it reached past its entitlement, and the attempt incremented the
+deny counter.
+
+## Return routing
+
+The gateway also masquerades (SNATs) tunnel traffic as it enters the internal
+network, so an internal service sees the connection as coming from the gateway
+and sends its replies back to the gateway, which returns them through the tunnel.
+Without this, a service's replies would follow its own default route to the
+network gateway and never reach the tunnel client. This is standard VPN-gateway
+behaviour, and it is generated into the nftables ruleset (the postrouting chain)
+from the tunnel subnet in peers.yaml, alongside the entitlement rules.
 
 ## Device posture
 

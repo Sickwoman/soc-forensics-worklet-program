@@ -12,6 +12,12 @@ TUNNEL_SERVER_IP=10.20.0.1
 echo "== WireGuard tunnel benchmark =="
 date -u +"run: %Y-%m-%dT%H:%M:%SZ"
 
+# The client only routes its entitled service by default, so add the gateway's
+# tunnel address to its allowed-ips for the measurement (this measures the raw
+# encrypted path to the server; it is a benchmark-only change, reset on down/up).
+BSRV=$(docker exec "$CLIENT" wg show wg0 peers | head -n1)
+docker exec "$CLIENT" wg set wg0 peer "$BSRV" allowed-ips "10.20.0.1/32,10.10.10.20/32"
+
 # Throughput: iperf3 to the server's tunnel address, so we measure the encrypted
 # path itself, before the forwarding firewall.
 echo "-- throughput (iperf3, 10s) --"

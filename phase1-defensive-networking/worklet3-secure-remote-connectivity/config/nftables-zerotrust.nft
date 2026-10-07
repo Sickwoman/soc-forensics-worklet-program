@@ -22,4 +22,11 @@ table inet zerotrust {
         # is what scripts/wg-monitor.py watches for to raise a denied-traffic alert.
         iifname "wg0" log prefix "ZT-DENY " level warn counter
     }
+
+    chain postrouting {
+        type nat hook postrouting priority srcnat; policy accept;
+        # Masquerade tunnel traffic onto the internal network so services reply
+        # via the gateway rather than the Docker bridge default route.
+        ip saddr 10.20.0.0/24 oifname != "wg0" masquerade
+    }
 }

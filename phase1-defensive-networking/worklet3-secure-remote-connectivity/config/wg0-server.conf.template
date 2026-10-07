@@ -9,7 +9,7 @@ PrivateKey = SERVER_PRIVATE_KEY_HERE
 # subnet. Both are fixed here: ip_forward is enabled, and the least-privilege
 # ruleset is loaded. nftables-zerotrust.nft is generated from config/peers.yaml
 # by scripts/render-config.py, so the firewall always matches the registry.
-PostUp = sysctl -w net.ipv4.ip_forward=1
+PostUp = sysctl -w net.ipv4.ip_forward=1 || true
 PostUp = nft -f /etc/wireguard/nftables-zerotrust.nft
 PostDown = nft delete table inet zerotrust || true
 

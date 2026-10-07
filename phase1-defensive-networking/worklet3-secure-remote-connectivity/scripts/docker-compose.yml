@@ -34,12 +34,14 @@ services:
       net.ipv4.ip_forward: "1"
     volumes:
       - lab-keys:/lab-keys
-      - ../config/peers.yaml:/etc/zerotrust/peers.yaml:ro
+      - ../config:/etc/zerotrust:ro
     networks:
       edge:
         ipv4_address: 172.28.0.10
       internal:
-        ipv4_address: 10.10.10.1
+        # .1 is reserved by Docker as the bridge gateway, so the WireGuard gateway
+        # container takes .2. Services reach it directly on the internal subnet.
+        ipv4_address: 10.10.10.2
 
   svc-web:
     image: nginx:alpine
@@ -50,8 +52,8 @@ services:
         ipv4_address: 10.10.10.20
 
   svc-db:
-    build: .
     image: zt-lab
+    pull_policy: never
     container_name: zt-svc-db
     hostname: svc-db
     environment:
@@ -61,8 +63,8 @@ services:
         ipv4_address: 10.10.10.30
 
   client-alice:
-    build: .
     image: zt-lab
+    pull_policy: never
     container_name: zt-client-alice
     hostname: client-alice
     environment:
@@ -72,15 +74,15 @@ services:
     devices: ["/dev/net/tun"]
     volumes:
       - lab-keys:/lab-keys
-      - ../config/peers.yaml:/etc/zerotrust/peers.yaml:ro
+      - ../config:/etc/zerotrust:ro
     depends_on: [wg-server]
     networks:
       edge:
         ipv4_address: 172.28.0.21
 
   client-bob:
-    build: .
     image: zt-lab
+    pull_policy: never
     container_name: zt-client-bob
     hostname: client-bob
     environment:
@@ -90,15 +92,15 @@ services:
     devices: ["/dev/net/tun"]
     volumes:
       - lab-keys:/lab-keys
-      - ../config/peers.yaml:/etc/zerotrust/peers.yaml:ro
+      - ../config:/etc/zerotrust:ro
     depends_on: [wg-server]
     networks:
       edge:
         ipv4_address: 172.28.0.22
 
   client-mallory:
-    build: .
     image: zt-lab
+    pull_policy: never
     container_name: zt-client-mallory
     hostname: client-mallory
     environment:
@@ -108,7 +110,7 @@ services:
     devices: ["/dev/net/tun"]
     volumes:
       - lab-keys:/lab-keys
-      - ../config/peers.yaml:/etc/zerotrust/peers.yaml:ro
+      - ../config:/etc/zerotrust:ro
     depends_on: [wg-server]
     networks:
       edge:

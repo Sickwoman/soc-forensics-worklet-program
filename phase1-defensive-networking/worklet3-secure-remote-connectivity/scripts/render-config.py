@@ -77,7 +77,7 @@ def render_server(reg, keys_dir):
         "ListenPort = " + str(srv["endpoint"].split(":")[-1]),
         "PrivateKey = " + privkey("server", keys_dir, "SERVER_PRIVATE_KEY_HERE"),
         "",
-        "PostUp = sysctl -w net.ipv4.ip_forward=1",
+        "PostUp = sysctl -w net.ipv4.ip_forward=1 || true",
         "PostUp = nft -f /etc/wireguard/nftables-zerotrust.nft",
         "PostDown = nft delete table inet zerotrust || true",
         "",
@@ -118,6 +118,7 @@ def render_client(reg, user, keys_dir):
 
 
 def render_nft(reg):
+    tunnel = reg["server"].get("tunnel_subnet", "10.20.0.0/24")
     lines = [
         "#!/usr/sbin/nft -f",
         "# Zero Trust least-privilege firewall for the WireGuard gateway.",
@@ -149,6 +150,13 @@ def render_nft(reg):
         "        # Log it with a counter, then the drop policy takes it. The ZT-DENY prefix",
         "        # is what scripts/wg-monitor.py watches for to raise a denied-traffic alert.",
         '        iifname "wg0" log prefix "ZT-DENY " level warn counter',
+        "    }",
+        "",
+        "    chain postrouting {",
+        "        type nat hook postrouting priority srcnat; policy accept;",
+        "        # Masquerade tunnel traffic onto the internal network so services reply",
+        "        # via the gateway rather than the Docker bridge default route.",
+        "        ip saddr " + tunnel + ' oifname != "wg0" masquerade',
         "    }",
         "}",
         "",
