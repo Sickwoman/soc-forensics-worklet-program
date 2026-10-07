@@ -12,7 +12,26 @@ values below are placeholders.
 - Tooling: iperf3 for throughput, ping for latency, wg-quick down then up for
   handshake time, docker stats for memory.
 
-## Results
+## Dry-run measurement (WSL2 — NOT the 8 GB target VM)
+
+Captured 2026-10-07 on WSL2 Ubuntu 24.04, kernel 6.18, 16 cores, Docker 29.1,
+with scripts/benchmark.sh. These are indicative only: a 16-core host and a
+container-local path are not the 8 GB VM, so they do not prove the 8 GB target.
+Re-run on the VM for the real figures.
+
+| Measure | WireGuard (WSL2 dry-run) |
+|---|---|
+| Throughput | 683 Mbit/s |
+| Latency RTT avg | 0.381 ms |
+| Handshake / connect | 0.37 s |
+| Gateway container memory | 11 MiB |
+| Whole lab memory, 6 containers | ~38 MiB |
+
+The footprint is the load-bearing number for the 8 GB claim: the gateway is ~11
+MiB and the whole six-container lab is tens of MiB, so RAM is not the limiting
+factor. This still needs confirming on the VM, but it is a strong indication.
+
+## Results (8 GB target VM — to be filled on the VM)
 
 | Measure | WireGuard | OpenVPN (optional) | Notes |
 |---|---|---|---|

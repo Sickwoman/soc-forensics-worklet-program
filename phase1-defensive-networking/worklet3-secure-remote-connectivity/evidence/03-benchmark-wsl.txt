@@ -1,0 +1,16 @@
+== WireGuard tunnel benchmark ==
+run: 2026-10-07T07:57:32Z
+-- throughput (iperf3, 10s) --
+  throughput: 683 Mbits/sec
+-- latency (ping x20 over tunnel) --
+  rtt avg:  0.381 ms
+-- handshake establishment --
+  handshake established in 0.37 s
+-- container memory footprint --
+zt-wg-server: 10.97MiB / 3.679GiB
+zt-client-alice: 4.066MiB / 3.679GiB
+zt-client-bob: 1.621MiB / 3.679GiB
+zt-svc-web: 14.8MiB / 3.679GiB
+zt-svc-db: 6.301MiB / 3.679GiB
+Record these in docs/benchmark-results.md. For an OpenVPN comparison row,
+stand up the OpenVPN container profile and re-run the same three measures.

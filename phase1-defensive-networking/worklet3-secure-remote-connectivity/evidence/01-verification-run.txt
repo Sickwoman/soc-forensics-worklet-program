@@ -1,0 +1,50 @@
+########## sync source -> clone (CR-stripped) ##########
+config mount in compose:
+37:      - ../config:/etc/zerotrust:ro
+########## bring lab up ##########
+containers:
+zt-client-bob: Up 11 seconds
+zt-client-alice: Up 11 seconds
+zt-client-mallory: Up 11 seconds
+zt-svc-web: Up 11 seconds
+zt-svc-db: Up 11 seconds
+zt-wg-server: Up 11 seconds
+########## force handshakes ##########
+jscFhVnTpuGc9s3UlvGOK4eaT0sOM4shNplUNLJIIE8=	1791359570
+6HEi9ZeXfMai2AIzVkYa5/b6x2Q9Xn30jqkBN81NaFY=	1791359570
+S7FUV5jLSEc1xgwDTMeh18t/zl/oeZgqA6NAJAMXRTg=	1791359570
+########## B1 alice -> web (expect http_200) ##########
+result=http_200
+########## B2 bob -> db (expect db-ok) ##########
+db-ok
+########## B3 alice -> db (expect BLOCKED) ##########
+rc=1 (nonzero=blocked, good)
+########## B4 bob -> web (expect BLOCKED) ##########
+result=http_000
+rc=28 (28=blocked, good)
+########## deny counter BEFORE route-widening ##########
+		iifname "wg0" log prefix "ZT-DENY " counter packets 0 bytes 0
+########## B5 widen mallory routes, then pivot to db (expect BLOCKED by gateway) ##########
+rc=1 (nonzero=blocked, good)
+deny counter AFTER pivot:
+		iifname "wg0" log prefix "ZT-DENY " counter packets 4 bytes 240
+########## B6 monitor detection (host) ##########
+{"connected": ["alice", "bob", "mallory"], "detail": "traffic hit the Zero Trust deny rule, a peer reached outside its entitlement", "new_drops": 4, "severity": "high", "source": "wg-monitor", "time": "2026-10-07T07:53:19Z", "total_drops": 4, "type": "denied_traffic"}
+########## B7 revoke alice; bob must stay up ##########
+Re-applying the active set live...
+Done. alice is revoked. Confirm with: docker exec zt-wg-server wg show
+alice -> web after revoke (expect BLOCKED, want http_000/rc!=0):
+result=http_000
+rc=28
+bob -> db after revoke (expect STILL db-ok):
+db-ok
+peer count remaining on gateway (want 2, alice gone):
+2
+########## B8 restart preserves policy: re-provision alice, down/up, re-test ##########
+after restart, alice -> web (expect http_200):
+result=http_200
+after restart, alice -> db (expect BLOCKED):
+rc=1 (nonzero=blocked, good)
+########## END ##########
+
+[exited with code 0]
