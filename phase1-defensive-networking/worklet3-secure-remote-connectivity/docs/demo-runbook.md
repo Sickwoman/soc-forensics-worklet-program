@@ -25,16 +25,17 @@ Scene 1, least privilege. alice reaches the web app, is blocked from the
 database; bob is the reverse. Line: "Same tunnel, same crypto, different reach.
 Access follows identity, so a stolen key is worth one service, not the network."
 
-Scene 2, attack and detection. A port scan of the VPN endpoint gets no response,
-WireGuard does not announce itself. Then mallory's compromised laptop tries to
-pivot to the database and is dropped, and the monitor raises a denied_traffic
-alert. Line: "The VPN is invisible to a scanner, and when a trusted-but-compromised
-device reaches past its entitlement, we see it."
+Scene 2, attack and detection. A port scan of the VPN endpoint gets no reply that
+confirms a service, because WireGuard does not answer unauthenticated packets; the
+UDP port shows open|filtered, not a usable banner. Then mallory's compromised
+laptop tries to pivot to the database and is dropped, and the monitor raises a
+denied_traffic alert. Line: "The endpoint gives a scanner nothing to act on, and
+when a trusted-but-compromised device reaches past its entitlement, we see it."
 
 Scene 3, respond and recover. The operator revokes mallory; her tunnel drops
 within a keepalive interval while alice stays connected. Line: "Containment is one
-command and takes seconds, with no outage for anyone else. That is the recovery
-step a flat VPN cannot do."
+command and takes seconds: access is scoped per identity and revoked live, with no
+outage for anyone else."
 
 ## If something breaks
 
