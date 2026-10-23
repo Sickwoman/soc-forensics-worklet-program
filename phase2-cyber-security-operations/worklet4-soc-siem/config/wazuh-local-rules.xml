@@ -1,0 +1,50 @@
+<!-- Place in /var/ossec/etc/rules/local_rules.xml on the Wazuh manager, then
+     restart the manager. These rules turn the Worklet 3 Zero Trust wg-monitor
+     alerts (JSON lines, source=wg-monitor) into Wazuh SIEM alerts, which is the
+     Worklet 3 -> Worklet 4 bridge described in
+     phase1-defensive-networking/worklet3-secure-remote-connectivity/docs/monitoring-and-detection.md
+
+     wg-monitor emits flat JSON, so Wazuh's built-in json decoder parses the
+     fields, no custom decoder is needed for these. Validate with:
+       echo '<a wg-monitor JSON line>' | /var/ossec/bin/wazuh-logtest -->
+
+<group name="zerotrust,wireguard,">
+
+  <!-- Base: any event from the Zero Trust tunnel monitor. -->
+  <rule id="100100" level="3">
+    <decoded_as>json</decoded_as>
+    <field name="source">wg-monitor</field>
+    <description>Zero Trust WireGuard monitor event</description>
+  </rule>
+
+  <!-- A peer reached past its entitlement; the gateway dropped it. High. -->
+  <rule id="100101" level="12">
+    <if_sid>100100</if_sid>
+    <field name="type">denied_traffic</field>
+    <description>Zero Trust: peer reached outside its entitlement, traffic denied</description>
+    <group>attack,lateral_movement,</group>
+  </rule>
+
+  <!-- A key not mapped to an active peer is on the gateway. High. -->
+  <rule id="100102" level="12">
+    <if_sid>100100</if_sid>
+    <field name="type">unknown_peer</field>
+    <description>Zero Trust: unknown or revoked peer present on the gateway</description>
+    <group>authentication_failed,</group>
+  </rule>
+
+  <!-- Same key from a new source address; possible key reuse. Medium. -->
+  <rule id="100103" level="7">
+    <if_sid>100100</if_sid>
+    <field name="type">endpoint_change</field>
+    <description>Zero Trust: peer endpoint changed, possible key reuse</description>
+  </rule>
+
+  <!-- Connected past entitlement expiry. Medium. -->
+  <rule id="100104" level="7">
+    <if_sid>100100</if_sid>
+    <field name="type">expired_peer</field>
+    <description>Zero Trust: peer connected past its entitlement expiry</description>
+  </rule>
+
+</group>
