@@ -1,0 +1,44 @@
+Waiting for tunnels...
+
+Zero Trust remote access
+Three identities on one tunnel, each allowed only what its role needs:
+  alice   developer   -> web app only        (10.10.10.20:80)
+  bob     dba         -> database only        (10.10.10.30:5432)
+  mallory contractor  -> web app  (compromised laptop, used later)
+
+========== Scene 1  Least privilege, access is scoped to identity ==========
+  ALLOWED  alice -> web   -> 200
+  BLOCKED  alice -> db    (correct, outside entitlement)
+  ALLOWED  bob   -> db    -> db-ok
+  BLOCKED  bob   -> web   (correct, outside entitlement)
+  Same tunnel, different reach. A stolen key is worth only one service.
+
+========== Scene 2  Attack and detection ==========
+  Port-scanning the VPN endpoint from an attacker on the edge network:
+    PORT      STATE         SERVICE
+    51820/udp open|filtered unknown
+    MAC Address: 9E:BF:76:70:FC:62 (Unknown)
+    
+  WireGuard does not answer unauthenticated packets, so it does not advertise itself.
+
+  mallory's laptop is compromised. The attacker widens its tunnel routes to
+  probe past her entitlement (web) toward the database:
+  BLOCKED  mallory -> db  (correct, outside entitlement)
+  The client was widened, but the gateway still enforces least privilege,
+  the two layers are independent. The monitor sees the dropped traffic:
+  {"connected": ["alice", "bob", "mallory"], "detail": "traffic hit the Zero Trust deny rule, a peer reached outside its entitlement", "new_drops": 5, "severity": "high", "source": "wg-monitor", "time": "2026-10-07T07:57:26Z", "total_drops": 5, "type": "denied_traffic"}
+
+========== Scene 3  Respond and recover, live ==========
+  Operator revokes mallory:
+    Marked mallory revoked in the registry.
+    Re-applying the active set live...
+    Done. mallory is revoked. Confirm with: docker exec zt-wg-server wg show
+
+  BLOCKED  mallory -> web  (correct, outside entitlement)
+  ALLOWED  alice   -> web  -> 200
+  mallory is off the network within one keepalive interval; alice never noticed.
+  Peers still on the gateway:
+    CTqkRVcrAyEcupTfRDayZ3/iTcOOE62uvCWm4/hDGDU=
+    m45gqG0/uHK7iyIaw8Zx0UApSDYwJsNvSTwb7dQ4sUg=
+
+Done. Re-run from the top with:  bash demo.sh --reset

@@ -1,0 +1,10 @@
+=== wazuh-lab.sh test (captured 2026-10-23T07:52:56Z) ===
+== SSH brute force (10 failed logins, one source IP) ==
+	id: '5712'
+	description: 'sshd: brute force trying to get access to the system. Non existent user.'
+== Zero Trust bridge: denied_traffic (Worklet 3 wg-monitor) ==
+	id: '100101'
+	description: 'Zero Trust: peer reached outside its entitlement, traffic denied'
+== Zero Trust bridge: unknown_peer ==
+	id: '100102'
+	description: 'Zero Trust: unknown or revoked peer present on the gateway'

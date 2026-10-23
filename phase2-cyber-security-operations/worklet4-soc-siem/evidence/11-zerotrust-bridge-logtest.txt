@@ -1,0 +1,25 @@
+
+Starting wazuh-logtest v4.9.2
+Type one log per line
+
+**Phase 1: Completed pre-decoding.
+	full event: '{"type":"denied_traffic","severity":"high","source":"wg-monitor","new_drops":4,"detail":"peer reached outside its entitlement","time":"2026-10-23T10:00:00Z"}'
+
+**Phase 2: Completed decoding.
+	name: 'json'
+	detail: 'peer reached outside its entitlement'
+	new_drops: '4'
+	severity: 'high'
+	source: 'wg-monitor'
+	time: '2026-10-23T10:00:00Z'
+	type: 'denied_traffic'
+
+**Phase 3: Completed filtering (rules).
+	id: '100101'
+	level: '12'
+	description: 'Zero Trust: peer reached outside its entitlement, traffic denied'
+	groups: '['zerotrust', 'wireguard', 'attack', 'lateral_movement']'
+	firedtimes: '1'
+	mail: 'True'
+**Alert to be generated.
+

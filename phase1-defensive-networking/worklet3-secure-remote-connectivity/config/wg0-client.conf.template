@@ -5,5 +5,15 @@ PrivateKey = CLIENT_PRIVATE_KEY_HERE
 [Peer]
 PublicKey = SERVER_PUBLIC_KEY_HERE
 Endpoint = SERVER_PUBLIC_IP_HERE:51820
-AllowedIPs = 10.10.10.0/24, 10.20.0.0/24
+
+# AllowedIPs is scoped to only the service this user is entitled to, here the web
+# app at 10.10.10.20. The original template set 10.10.10.0/24, which routed the
+# entire internal network into the tunnel and defeated least privilege. This is
+# the client-side half of the control, the server enforces the same scope again
+# in nftables, so a tampered client still cannot reach anything extra.
+#
+# This example is alice, the developer. Bob, the database admin, would instead use
+# AllowedIPs = 10.10.10.30/32. Values come from the peer's allow list in
+# config/peers.yaml.
+AllowedIPs = 10.10.10.20/32
 PersistentKeepalive = 25

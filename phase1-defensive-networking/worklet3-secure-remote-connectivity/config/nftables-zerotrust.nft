@@ -1,0 +1,32 @@
+#!/usr/sbin/nft -f
+# Zero Trust least-privilege firewall for the WireGuard gateway.
+# GENERATED from config/peers.yaml by scripts/render-config.py, do not edit by hand.
+# Loaded by the PostUp line in wg0-server.conf. Default policy is drop, so a peer
+# can only reach a service that has an explicit accept rule below.
+
+table inet zerotrust {
+    chain forward {
+        type filter hook forward priority filter; policy drop;
+
+        # Let replies and ongoing flows back through.
+        ct state established,related accept
+
+        # Per-peer entitlements, one accept per allowed service, generated from
+        # each active peer's allow list in peers.yaml.
+        ip saddr 10.20.0.2 ip daddr 10.10.10.20 tcp dport 80 ct state new accept   # alice -> web
+        ip saddr 10.20.0.3 ip daddr 10.10.10.30 tcp dport 5432 ct state new accept   # bob -> db
+        ip saddr 10.20.0.4 ip daddr 10.10.10.20 tcp dport 80 ct state new accept   # mallory -> web
+
+        # Anything else arriving from the tunnel is outside the peer's entitlement.
+        # Log it with a counter, then the drop policy takes it. The ZT-DENY prefix
+        # is what scripts/wg-monitor.py watches for to raise a denied-traffic alert.
+        iifname "wg0" log prefix "ZT-DENY " level warn counter
+    }
+
+    chain postrouting {
+        type nat hook postrouting priority srcnat; policy accept;
+        # Masquerade tunnel traffic onto the internal network so services reply
+        # via the gateway rather than the Docker bridge default route.
+        ip saddr 10.20.0.0/24 oifname != "wg0" masquerade
+    }
+}
